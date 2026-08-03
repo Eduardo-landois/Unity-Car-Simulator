@@ -47,6 +47,22 @@ ExportedObj/
 *.unityproj
 *.sln
 *.slnx
+HEAD
+
+
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[叠]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+/assets/AssetStoreTools*
+*.csproj
+*.unityproj
+*.sln
+d476bb337 (First commit of advanced project)
+f51bd1b7b (Initial commit)
 *.suo
 *.tmp
 *.user
@@ -55,6 +71,10 @@ ExportedObj/
 *.booproj
 *.svd
 *.pdb
+HEAD
+
+HEAD
+f51bd1b7b (Initial commit)
 *.mdb
 *.opendb
 *.VC.db
@@ -104,3 +124,10 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+HEAD
+
+
+*.opendb
+*.VC.db
+d476bb337 (First commit of advanced project)
+f51bd1b7b (Initial commit)
