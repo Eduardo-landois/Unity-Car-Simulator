@@ -1,4 +1,5 @@
 using UnityEngine;
+using MVC.Core;
 
 public class SteeringWheelRotationManager : MonoBehaviour
 {
@@ -6,65 +7,53 @@ public class SteeringWheelRotationManager : MonoBehaviour
     public Vector3 rotLocalCenter;
     public Vector3 rotLocalAxis;
 
+    public Vehicle vehicle;
+    public float maxRotationAngle = 450f;
+    public bool invert;
 
-    private float rotAngleDeg;
+    Quaternion restLocalRotation;
 
-    private float rotSpeed = 50f;
-
-    private float currentAngle = 0f;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        if (targetSteeringWheel == null)
+            targetSteeringWheel = transform;
 
+        if (vehicle == null)
+            vehicle = GetComponentInParent<Vehicle>();
+
+        restLocalRotation = targetSteeringWheel.localRotation;
     }
 
-    // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        // same position and rotation as steering wheel
-        if (this.targetSteeringWheel != null)
-        {
-            Vector3 posSteeringWheel = this.targetSteeringWheel.position;
+        if (targetSteeringWheel == null || vehicle == null || vehicle.SteerWheels == null || vehicle.SteerWheels.Length == 0)
+            return;
 
-            if (Input.GetKey(KeyCode.A))
-            {
-                rotAngleDeg = -rotSpeed * Time.deltaTime;
-            }
-            else if (Input.GetKey(KeyCode.D))
-            {
-                rotAngleDeg = rotSpeed * Time.deltaTime;
-            }
-            else // returning wheel to center
-            {
-                if (Mathf.Abs(currentAngle) > 0.1f)
-                {
-                    rotAngleDeg = rotSpeed * Time.deltaTime * -Mathf.Sign(currentAngle);
+        VehicleWheel wheel = vehicle.SteerWheels[0].Instance;
+        if (wheel == null)
+            return;
 
-                    if (Mathf.Abs(rotAngleDeg) > Mathf.Abs(currentAngle))
-                    {
-                        rotAngleDeg = -currentAngle;
-                    }
-                }
-                else
-                {
-                    currentAngle = 0f;
-                    return;
-                }
-            }
+        // CurrentSteerAngle reflects the real physics steer angle no matter what
+        // is driving the car (player input, AI/NavMeshAgent, gamepad, etc.).
+        float maxSteerAngle = Mathf.Max(vehicle.Steering.MaximumSteerAngle, 0.01f);
+        float steerInput = Mathf.Clamp(wheel.CurrentSteerAngle / maxSteerAngle, -1f, 1f);
+        if (invert)
+            steerInput = -steerInput;
 
-            Vector3 rotGlobalCenter = this.targetSteeringWheel.transform.TransformPoint(this.rotLocalCenter);
-            Vector3 rotGlobalAxis = this.targetSteeringWheel.transform.TransformDirection(this.rotLocalAxis);
-            this.targetSteeringWheel.transform.RotateAround(rotGlobalCenter, rotGlobalAxis, rotAngleDeg);
+        float angle = steerInput * maxRotationAngle;
 
-            currentAngle += rotAngleDeg;
+        targetSteeringWheel.localRotation = restLocalRotation;
 
-        }
-
+        Vector3 rotGlobalCenter = targetSteeringWheel.TransformPoint(rotLocalCenter);
+        Vector3 rotGlobalAxis = targetSteeringWheel.TransformDirection(rotLocalAxis);
+        targetSteeringWheel.RotateAround(rotGlobalCenter, rotGlobalAxis, angle);
     }
 
     void OnDrawGizmosSelected()
     {
+        if (targetSteeringWheel == null)
+            return;
+
         // Manually configuring local rotation axis.
         Gizmos.color = new Color(1, 1, 0, 0.75F);
         Vector3 rotGlobalAxis = this.targetSteeringWheel.transform.TransformDirection(this.rotLocalAxis);
